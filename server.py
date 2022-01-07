@@ -2,33 +2,47 @@ from sys import argv
 import json
 from socket import AF_INET, SOCK_STREAM, socket
 
+import logging
+from log import server_log_config
+
+
+logger = logging.getLogger('server_logger')
+
 
 def parse_argv(args):
-    if '-p' in args:
-        port = int(args[args.index('-p') + 1])
-    else:
-        port = 7777
+    try:
+        if '-p' in args:
+            port = int(args[args.index('-p') + 1])
+        else:
+            port = 7777
 
-    if '-a' in args:
-        addr = args[args.index('-a') + 1]
-    else:
-        addr = ''
+        if '-a' in args:
+            addr = args[args.index('-a') + 1]
+        else:
+            addr = ''
 
-    return addr, port
+        logger.info('Получены адрес и порт для сервера')
+        return addr, port
+    except ValueError:
+        logger.error('Неверно переданы аргументы командной строки!')
 
 
 def get_response(message):
-    if message['action'] == 'presence' and message['user'] == 'guest':
-        response = {
-            'response': 200
-        }
-    else:
-        response = {
-            'response': 400,
-            'error': 'Bad Request'
-        }
+    try:
+        if message['action'] == 'presence' and message['user'] == 'guest':
+            response = {
+                'response': 200
+            }
+        else:
+            response = {
+                'response': 400,
+                'error': 'Bad Request'
+            }
+        logger.info('Сформирован ответ сервера: %s', response)
+        return response
 
-    return response
+    except KeyError:
+        logger.error('Неправильно сформирован ответ клиента!')
 
 
 def runserver():
@@ -36,6 +50,7 @@ def runserver():
     s = socket(AF_INET, SOCK_STREAM)
     s.bind(parse_argv(argv))
     s.listen()
+    logger.info('Сервер готов!')
 
     while True:
         client, client_addr = s.accept()
