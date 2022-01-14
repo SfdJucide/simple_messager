@@ -1,4 +1,5 @@
 import logging
+import inspect
 
 
 logging.basicConfig(
@@ -8,3 +9,12 @@ logging.basicConfig(
 )
 
 client_log = logging.getLogger('client_logger')
+
+
+def log(func):
+    def call(*args, **kwargs):
+        res = func(*args, **kwargs)
+        client_log.info(f'Функция: {func.__name__} Параметры: {args}, {kwargs} '
+                        f'Вызов из функции {inspect.stack()[1][3]}')
+        return res
+    return call

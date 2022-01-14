@@ -3,12 +3,13 @@ import json
 from socket import AF_INET, SOCK_STREAM, socket
 
 import logging
-from log import server_log_config
+from log.server_log_config import log
 
 
 logger = logging.getLogger('server_logger')
 
 
+@log
 def parse_argv(args):
     try:
         if '-p' in args:
@@ -26,7 +27,7 @@ def parse_argv(args):
     except ValueError:
         logger.error('Неверно переданы аргументы командной строки!')
 
-
+@log
 def get_response(message):
     try:
         if message['action'] == 'presence' and message['user'] == 'guest':

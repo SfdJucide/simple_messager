@@ -4,12 +4,12 @@ import time
 from socket import socket, AF_INET, SOCK_STREAM
 
 import logging
-from log import client_log_config
+from log.client_log_config import log
 
 
 logger = logging.getLogger('client_logger')
 
-
+@log
 def build_message(user):
     presence_message = {
         'action': 'presence',
@@ -19,7 +19,7 @@ def build_message(user):
     logger.info('Сообщение серверу сформировано: %s', presence_message)
     return presence_message
 
-
+@log
 def parse_client_argv(args):
     try:
         addr = args[1]
@@ -31,7 +31,7 @@ def parse_client_argv(args):
 
     return addr, port
 
-
+@log
 def check_server_answer(response):
     try:
         if response['response'] == 200:
