@@ -62,7 +62,6 @@ class ClientTestCase(unittest.TestCase):
 
     def test_build_message(self):
         self.assertEqual(build_message('enemy')['user'], self.message2['user'])
-        self.assertAlmostEqual(build_message('guest')['time'], self.message1['time'], 1)
 
     def test_parse_client(self):
         self.assertEqual(parse_client_argv(args=self.args2), ('localhost', 7777))

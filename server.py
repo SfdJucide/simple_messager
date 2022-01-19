@@ -1,4 +1,6 @@
+import time
 from sys import argv
+import select
 import json
 from socket import AF_INET, SOCK_STREAM, socket
 
@@ -27,6 +29,7 @@ def parse_argv(args):
     except ValueError:
         logger.error('Неверно переданы аргументы командной строки!')
 
+
 @log
 def get_response(message):
     try:
@@ -47,23 +50,61 @@ def get_response(message):
 
 
 def runserver():
+    clients = []
+    messages = []
 
     s = socket(AF_INET, SOCK_STREAM)
     s.bind(parse_argv(argv))
-    s.listen()
+    s.settimeout(0.5)
+    s.listen(5)
     logger.info('Сервер готов!')
 
     while True:
-        client, client_addr = s.accept()
-        data = client.recv(100000)
-        json_data = data.decode('utf-8')
-        message = json.loads(json_data)
+        try:
+            client, client_addr = s.accept()
+        except:
+            pass
+        else:
+            logger.info(f"Соединение с клиентом {client_addr} установлено")
+            clients.append(client)
 
-        response = get_response(message)
+        recv_data_lst = []
+        send_data_lst = []
 
-        json_message = json.dumps(response)
-        client.send(json_message.encode('utf-8'))
-        client.close()
+        try:
+            if clients:
+                recv_data_lst, send_data_lst, err_lst = select.select(clients, clients, [], 0)
+        except OSError:
+            pass
+
+        if recv_data_lst:
+            for client_mess in recv_data_lst:
+                try:
+                    data = client_mess.recv(100000)
+                    json_data = data.decode('utf-8')
+                    message = json.loads(json_data)
+
+                    response = get_response(message)
+                except:
+                    logger.info(f'Клиент {client_mess.getpeername()} отключился от сервера')
+                    clients.remove(client_mess)
+
+        if messages and send_data_lst:
+            message = {
+                'action': 'message',
+                'sender': messages[0][0],
+                'time': time.time(),
+                'text': messages[0][1]
+            }
+            del message[0]
+
+            for client in send_data_lst:
+                try:
+                    json_message = json.dumps(response)
+                    client.send(json_message.encode('utf-8'))
+                except:
+                    logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
+                    clients.remove(client)
 
 
 if __name__ == '__main__':
