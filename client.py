@@ -2,6 +2,7 @@ from sys import argv
 import sys
 import json
 import time
+import threading
 from socket import socket, AF_INET, SOCK_STREAM
 
 import logging
@@ -72,6 +73,55 @@ def get_message(sock, username):
     return message_context
 
 
+@log
+def message_receive(sock, username):
+    while True:
+        data = sock.recv(100000)
+        json_data = data.decode('utf-8')
+        response = json.loads(json_data)
+
+        if response['action'] == 'message' and response['destination'] == username:
+            print(f'Получено сообщение от пользователя {response["sender"]}:\n'
+                  f'{response["text"]}')
+        else:
+            logger.error(f'Получено некорректное сообщение от сервера: {response}')
+
+
+@log
+def build_communication_message(sock, username='guest'):
+    receiver = input('Введите получателя > ')
+    message = input('Введите сообщение > ')
+
+    response = {
+        'action': 'message',
+        'sender': username,
+        'destination': receiver,
+        'time': time.time(),
+        'text': message
+    }
+    logger.info(f'Сформировано сообщение {response}')
+
+    json_message = json.dumps(response)
+    sock.send(json_message.encode('utf-8'))
+    logger.info(f'Сообщение отослано пользователю {receiver}')
+
+
+def user_interactive(sock, username):
+    print('Команды месенджера:\n'
+          'Q - выход\n'
+          'M - отправить сообщение')
+
+    while True:
+        command = input('Введите команду > ')
+        if command == 'M':
+            build_communication_message(sock, username)
+        elif command == 'Q':
+            print("До свидания!")
+            logger.info('Клиент завершил сессию')
+        else:
+            print("Неверная команда!")
+
+
 def run_client():
     s = socket(AF_INET, SOCK_STREAM)
     addr, port, mode = parse_client_argv(argv)
@@ -87,32 +137,16 @@ def run_client():
 
     check_server_answer(response)
 
-    if mode == 'send':
-        print('Режим работы - отправка сообщений.')
-    else:
-        print('Режим работы - приём сообщений.')
+    client_name = 'guest'
 
-    while True:
-        if mode == 'send':
-            try:
-                message = get_message(s, 'guest')
-                json_message = json.dumps(message)
-                s.send(json_message.encode('utf-8'))
+    receiver = threading.Thread(target=message_receive, args=(s, client_name))
+    receiver.daemon = True
+    receiver.start()
+    logger.info(f'Клиент {client_name} online')
 
-            except (ConnectionResetError, ConnectionError, ConnectionAbortedError):
-                logger.error(f'Соединение с сервером {addr} было потеряно.')
-                sys.exit(1)
-
-        if mode == 'listen':
-            try:
-                data = s.recv(100000)
-                json_data = data.decode('utf-8')
-                response = json.loads(json_data)
-
-                check_server_answer(response)
-            except (ConnectionResetError, ConnectionError, ConnectionAbortedError):
-                logger.error(f'Соединение с сервером {addr} было потеряно.')
-                sys.exit(1)
+    user_interface = threading.Thread(target=user_interactive, args=(s, client_name))
+    user_interface.daemon = True
+    user_interface.start()
 
 
 if __name__ == '__main__':

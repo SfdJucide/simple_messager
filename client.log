@@ -54,3 +54,30 @@
 2022-01-19 18:05:15,025 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.1', '6666', 'send'],), {} Вызов из функции run_client
 2022-01-19 18:05:15,027 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1642604715.0276463, 'user': 'guest'}
 2022-01-19 18:05:15,028 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
+2022-01-19 18:52:12,468 INFO       client               Клиент подключается к серверу...
+2022-01-19 18:52:12,496 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.2', '4444', 'listen'],), {} Вызов из функции run_client
+2022-01-19 18:52:12,497 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1642607532.497923, 'user': 'guest'}
+2022-01-19 18:52:12,499 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
+2022-01-19 18:52:35,830 INFO       client               Клиент подключается к серверу...
+2022-01-19 18:52:35,856 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.2', '4444', 'send'],), {} Вызов из функции run_client
+2022-01-19 18:52:35,857 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1642607555.8572433, 'user': 'guest'}
+2022-01-19 18:52:35,858 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
+2022-01-19 18:56:15,693 INFO       client               Клиент подключается к серверу...
+2022-01-19 18:56:15,694 WARNING    client               Неверно переданы адресс или порт
+2022-01-19 18:56:15,722 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.2', '4444'],), {} Вызов из функции run_client
+2022-01-19 18:57:05,109 INFO       client               Клиент подключается к серверу...
+2022-01-19 18:57:05,135 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.2', '4444', 'send'],), {} Вызов из функции run_client
+2022-01-19 18:57:05,136 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1642607825.1363413, 'user': 'guest'}
+2022-01-19 18:57:05,137 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
+2022-01-19 19:00:13,667 INFO       client               Клиент подключается к серверу...
+2022-01-19 19:00:13,689 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.2', '4444', 'listen'],), {} Вызов из функции run_client
+2022-01-19 19:00:13,690 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1642608013.6909254, 'user': 'guest'}
+2022-01-19 19:00:13,691 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
+2022-01-19 19:01:32,001 INFO       client               Клиент подключается к серверу...
+2022-01-19 19:01:32,027 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.2', '4444', 'listen'],), {} Вызов из функции run_client
+2022-01-19 19:01:32,028 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1642608092.0286443, 'user': 'guest'}
+2022-01-19 19:01:32,029 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
+2022-01-19 19:02:18,118 INFO       client               Клиент подключается к серверу...
+2022-01-19 19:02:18,143 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.2', '4444', 'listen'],), {} Вызов из функции run_client
+2022-01-19 19:02:18,144 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1642608138.144118, 'user': 'guest'}
+2022-01-19 19:02:18,145 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
