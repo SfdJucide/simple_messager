@@ -12,5 +12,8 @@ def run_clients():
 
 if __name__ == '__main__':
     number_of_clients = int(input('Введите кол-во запускаемых участников чата >> '))
-    for i in range(number_of_clients):
-        Thread(target=run_clients).start()
+    if number_of_clients <= 5:
+        for i in range(number_of_clients):
+            Thread(target=run_clients).start()
+    else:
+        print('Слишком много участников online, сервер перегружен!')

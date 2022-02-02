@@ -135,3 +135,17 @@
 2022-01-30 16:19:39,342 INFO       client_log_config    Функция: parse_client_argv Параметры: (['client.py', '127.0.0.5', '9999', 'send'],), {} Вызов из функции run_client
 2022-01-30 16:19:39,343 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1643548779.343386, 'user': 'guest'}
 2022-01-30 16:19:39,345 INFO       client_log_config    Функция: build_message Параметры: ('guest',), {} Вызов из функции run_client
+2022-02-01 15:07:44,413 INFO       client               Клиент подключается к серверу...
+2022-02-01 15:07:44,447 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x0177F0A0>,), {} Вызов из функции run_client
+2022-02-01 15:07:44,447 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1643717264.4477327, 'user': 'guest'}
+2022-02-01 15:07:44,449 INFO       client_log_config    Функция: build_message Параметры: (<__main__.Client object at 0x0177F0A0>, 'guest'), {} Вызов из функции run_client
+2022-02-01 15:39:00,124 INFO       client               Клиент подключается к серверу...
+2022-02-01 15:39:00,150 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x0237F0A0>,), {} Вызов из функции run_client
+2022-02-01 15:39:42,342 INFO       client               Клиент подключается к серверу...
+2022-02-01 15:39:42,368 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x015EF0A0>,), {} Вызов из функции run_client
+2022-02-01 15:39:42,369 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1643719182.3694837, 'user': 'guest'}
+2022-02-01 15:39:42,371 INFO       client_log_config    Функция: build_message Параметры: (<__main__.Client object at 0x015EF0A0>, 'guest'), {} Вызов из функции run_client
+2022-02-01 15:45:04,228 INFO       client               Клиент подключается к серверу...
+2022-02-01 15:45:04,254 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x01B4F0A0>,), {} Вызов из функции run_client
+2022-02-01 15:45:04,255 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1643719504.2550578, 'user': 'guest'}
+2022-02-01 15:45:04,257 INFO       client_log_config    Функция: build_message Параметры: (<__main__.Client object at 0x01B4F0A0>, 'guest'), {} Вызов из функции run_client

@@ -8,104 +8,125 @@ import logging
 from log.server_log_config import log
 
 
-logger = logging.getLogger('server_logger')
+class CheckPort:
+    def __init__(self):
+        self.port = 7777
 
+    def __get__(self, instance, instance_type):
+        return self.port
 
-@log
-def parse_argv(args):
-    try:
-        if '-p' in args:
-            port = int(args[args.index('-p') + 1])
+    def __set__(self, instance, value):
+        if isinstance(value, int) and value >= 0:
+            self.port = value
         else:
-            port = 7777
-
-        if '-a' in args:
-            addr = args[args.index('-a') + 1]
-        else:
-            addr = ''
-
-        logger.info('Получены адрес и порт для сервера')
-        return addr, port
-    except ValueError:
-        logger.error('Неверно переданы аргументы командной строки!')
+            raise ValueError("Неверно указан порт!")
 
 
-@log
-def get_response(message):
-    try:
-        if message['action'] == 'presence' and message['user'] == 'guest':
-            response = {
-                'response': 200
-            }
-        else:
-            response = {
-                'response': 400,
-                'error': 'Bad Request'
-            }
-        logger.info('Сформирован ответ сервера: %s', response)
-        return response
-
-    except KeyError:
-        logger.error('Неправильно сформирован ответ клиента!')
+class ServerVerifier(type):
+    pass
 
 
-def runserver():
-    clients = []
-    messages = []
+class Server(metaclass=ServerVerifier):
 
-    s = socket(AF_INET, SOCK_STREAM)
-    s.bind(parse_argv(argv))
-    s.settimeout(0.5)
-    s.listen(5)
-    logger.info('Сервер готов!')
+    def __init__(self):
+        self.args = argv
+        self.clients = []
+        self.messages = []
+        self.sock = socket(AF_INET, SOCK_STREAM)
 
-    while True:
+    @log
+    def parse_argv(self):
         try:
-            client, client_addr = s.accept()
-        except:
-            pass
-        else:
-            logger.info(f"Соединение с клиентом {client_addr} установлено")
-            clients.append(client)
+            cp = CheckPort
+            cp.port = int(self.args[self.args.index('-p') + 1])
+            # if '-p' in self.args:
+            #     port = int(self.args[self.args.index('-p') + 1])
+            # else:
+            #     port = 7777
 
-        recv_data_lst = []
-        send_data_lst = []
+            if '-a' in self.args:
+                addr = self.args[self.args.index('-a') + 1]
+            else:
+                addr = ''
 
+            logger.info('Получены адрес и порт для сервера')
+            return addr, cp.port
+        except ValueError:
+            logger.error('Неверно переданы аргументы командной строки!')
+
+    @log
+    def get_response(self, message):
         try:
-            if clients:
-                recv_data_lst, send_data_lst, err_lst = select.select(clients, clients, [], 0)
-        except OSError:
-            pass
+            if message['action'] == 'presence' and message['user'] == 'guest':
+                response = {
+                    'response': 200
+                }
+            else:
+                response = {
+                    'response': 400,
+                    'error': 'Bad Request'
+                }
+            logger.info('Сформирован ответ сервера: %s', response)
+            return response
 
-        if recv_data_lst:
-            for client_mess in recv_data_lst:
-                try:
-                    data = client_mess.recv(100000)
-                    json_data = data.decode('utf-8')
-                    message = json.loads(json_data)
+        except KeyError:
+            logger.error('Неправильно сформирован ответ клиента!')
 
-                    response = get_response(message)
-                except:
-                    logger.info(f'Клиент {client_mess.getpeername()} отключился от сервера')
-                    clients.remove(client_mess)
+    def runserver(self):
+        self.sock.bind(self.parse_argv())
+        self.sock.settimeout(0.5)
+        self.sock.listen(5)
+        logger.info('Сервер готов!')
 
-        if messages and send_data_lst:
-            message = {
-                'action': 'message',
-                'sender': messages[0][0],
-                'time': time.time(),
-                'text': messages[0][1]
-            }
-            del message[0]
+        while True:
+            try:
+                client, client_addr = self.sock.accept()
+            except:
+                pass
+            else:
+                logger.info(f"Соединение с клиентом {client_addr} установлено")
+                self.clients.append(client)
 
-            for client in send_data_lst:
-                try:
-                    json_message = json.dumps(response)
-                    client.send(json_message.encode('utf-8'))
-                except:
-                    logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
-                    clients.remove(client)
+            recv_data_lst = []
+            send_data_lst = []
+
+            try:
+                if self.clients:
+                    recv_data_lst, send_data_lst, err_lst = select.select(self.clients, self.clients, [], 0)
+            except OSError:
+                pass
+
+            if recv_data_lst:
+                for client_mess in recv_data_lst:
+                    try:
+                        data = client_mess.recv(100000)
+                        json_data = data.decode('utf-8')
+                        message = json.loads(json_data)
+
+                        response = self.get_response(message)
+                    except:
+                        logger.info(f'Клиент {client_mess.getpeername()} отключился от сервера')
+                        self.clients.remove(client_mess)
+
+            if self.messages and send_data_lst:
+                message = {
+                    'action': 'message',
+                    'sender': self.messages[0][0],
+                    'time': time.time(),
+                    'text': self.messages[0][1]
+                }
+                del message[0]
+
+                for client in send_data_lst:
+                    try:
+                        json_message = json.dumps(response)
+                        client.send(json_message.encode('utf-8'))
+                    except:
+                        logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
+                        self.clients.remove(client)
 
 
 if __name__ == '__main__':
-    runserver()
+    logger = logging.getLogger('server_logger')
+    server = Server()
+    server.runserver()
