@@ -34,17 +34,12 @@ class Client(metaclass=ClientVerifier):
         try:
             addr = self.args[1]
             port = int(self.args[2])
-            mode = self.args[3]
         except IndexError:
             logger.warning('Неверно переданы адресс или порт')
             addr = 'localhost'
             port = 7777
-            mode = 'listen'
 
-        if mode not in ('listen', 'send'):
-            logger.error('Указан неверный режим работы клиента!')
-
-        return addr, port, mode
+        return addr, port
 
     @log
     def check_server_answer(self, response):
@@ -120,24 +115,25 @@ class Client(metaclass=ClientVerifier):
             elif command == 'Q':
                 print("До свидания!")
                 logger.info('Клиент завершил сессию')
+                break
             else:
                 print("Неверная команда!")
 
     def run_client(self):
-        addr, port, mode = self.parse_client_argv()
+        addr, port = self.parse_client_argv()
         self.sock.connect((addr, port))
 
-        message = self.build_message('guest')
-        json_message = json.dumps(message)
-        self.sock.send(json_message.encode('utf-8'))
+        # message = self.build_message('guest')
+        # json_message = json.dumps(message)
+        # self.sock.send(json_message.encode('utf-8'))
+        #
+        # data = self.sock.recv(100000)
+        # json_data = data.decode('utf-8')
+        # response = json.loads(json_data)
+        #
+        # self.check_server_answer(response)
 
-        data = self.sock.recv(100000)
-        json_data = data.decode('utf-8')
-        response = json.loads(json_data)
-
-        self.check_server_answer(response)
-
-        client_name = 'guest'
+        client_name = input('Введите ваш ник > ')
 
         receiver = threading.Thread(target=self.message_receive, args=(self.sock, client_name))
         receiver.daemon = True
@@ -147,6 +143,9 @@ class Client(metaclass=ClientVerifier):
         user_interface = threading.Thread(target=self.user_interactive, args=(self.sock, client_name))
         user_interface.daemon = True
         user_interface.start()
+
+        receiver.join()
+        user_interface.join()
 
 
 if __name__ == '__main__':
