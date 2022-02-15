@@ -250,3 +250,38 @@
 2022-02-15 19:31:33,035 INFO       client               Сообщение отослано пользователю gg
 2022-02-15 19:31:33,040 INFO       client_log_config    Функция: build_communication_message Параметры: (<__main__.Client object at 0x024BE0A0>, <socket.socket fd=408, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 63988), raddr=('127.0.0.7', 9999)>, 'sfd'), {} Вызов из функции user_interactive
 2022-02-15 19:31:33,229 ERROR      client               Получено некорректное сообщение от сервера: {'action': 'message', 'sender': 'sfd', 'time': 1644942693.2280548, 'text': 'zdarova du', 'destination': 'gg'}
+2022-02-15 21:04:45,265 INFO       client               Клиент завершил сессию
+2022-02-15 21:39:39,886 INFO       client               Клиент подключается к серверу...
+2022-02-15 21:39:39,920 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x0197E028>,), {} Вызов из функции run_client
+2022-02-15 21:39:46,470 INFO       client               Клиент подключается к серверу...
+2022-02-15 21:39:46,496 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x01BAE028>,), {} Вызов из функции run_client
+2022-02-15 21:39:51,183 INFO       client               Клиент sfd online
+2022-02-15 21:39:56,304 INFO       client               Клиент nini online
+2022-02-15 21:40:49,860 INFO       client               Сформировано сообщение {'action': 'message', 'sender': 'sfd', 'destination': 'nini', 'time': 1644950449.859824, 'text': 'hello nini'}
+2022-02-15 21:40:49,860 INFO       client               Сообщение отослано пользователю nini
+2022-02-15 21:40:49,877 INFO       client_log_config    Функция: build_communication_message Параметры: (<__main__.Client object at 0x0197E028>, <socket.socket fd=416, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 55893), raddr=('127.0.0.7', 9999)>, 'sfd'), {} Вызов из функции user_interactive
+2022-02-15 21:41:16,280 INFO       client               Сформировано сообщение {'action': 'message', 'sender': 'nini', 'destination': 'sfd', 'time': 1644950476.280183, 'text': 'hj'}
+2022-02-15 21:41:16,281 INFO       client               Сообщение отослано пользователю sfd
+2022-02-15 21:41:16,284 INFO       client_log_config    Функция: build_communication_message Параметры: (<__main__.Client object at 0x01BAE028>, <socket.socket fd=468, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 55913), raddr=('127.0.0.7', 9999)>, 'nini'), {} Вызов из функции user_interactive
+2022-02-15 21:44:45,032 INFO       client               Клиент подключается к серверу...
+2022-02-15 21:44:45,109 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x01EAE028>,), {} Вызов из функции run_client
+2022-02-15 21:44:48,176 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1644950688.1767356, 'user': 'Guest'}
+2022-02-15 21:44:48,178 INFO       client_log_config    Функция: build_presence_message Параметры: (<__main__.Client object at 0x01EAE028>,), {} Вызов из функции run_client
+2022-02-15 21:55:01,562 INFO       client               Клиент подключается к серверу...
+2022-02-15 21:55:01,597 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x01E7E028>,), {} Вызов из функции run_client
+2022-02-15 21:55:05,004 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1644951305.0045393, 'user': 'Guest'}
+2022-02-15 21:55:05,005 INFO       client_log_config    Функция: build_presence_message Параметры: (<__main__.Client object at 0x01E7E028>,), {} Вызов из функции run_client
+2022-02-15 21:57:46,874 INFO       client               Клиент подключается к серверу...
+2022-02-15 21:57:46,901 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x0235E028>,), {} Вызов из функции run_client
+2022-02-15 21:57:50,017 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1644951470.0174203, 'user': 'Guest'}
+2022-02-15 21:57:50,018 INFO       client_log_config    Функция: build_presence_message Параметры: (<__main__.Client object at 0x0235E028>,), {} Вызов из функции run_client
+2022-02-15 21:59:40,133 INFO       client               Клиент подключается к серверу...
+2022-02-15 21:59:40,162 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x01EBE028>,), {} Вызов из функции run_client
+2022-02-15 21:59:42,099 INFO       client               Сообщение серверу сформировано: {'action': 'presence', 'time': 1644951582.0991383, 'user': 'Guest'}
+2022-02-15 21:59:42,101 INFO       client_log_config    Функция: build_presence_message Параметры: (<__main__.Client object at 0x01EBE028>,), {} Вызов из функции run_client
+2022-02-15 22:01:57,170 INFO       client               Клиент подключается к серверу...
+2022-02-15 22:01:57,196 INFO       client_log_config    Функция: parse_client_argv Параметры: (<__main__.Client object at 0x01F6E028>,), {} Вызов из функции run_client
+2022-02-15 22:01:59,147 INFO       client               Клиент sfd online
+2022-02-15 22:02:07,286 INFO       client               Сформировано сообщение {'action': 'message', 'sender': 'sfd', 'destination': 's', 'time': 1644951727.2868547, 'text': 's'}
+2022-02-15 22:02:07,286 INFO       client               Сообщение отослано пользователю s
+2022-02-15 22:02:07,291 INFO       client_log_config    Функция: build_communication_message Параметры: (<__main__.Client object at 0x01F6E028>, <socket.socket fd=504, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 51736), raddr=('127.0.0.7', 9999)>, 'sfd'), {} Вызов из функции user_interactive

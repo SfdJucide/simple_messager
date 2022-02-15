@@ -20,7 +20,7 @@ class Client(metaclass=ClientVerifier):
         self.sock = socket(AF_INET, SOCK_STREAM)
 
     @log
-    def build_message(self, user):
+    def build_presence_message(self, user='Guest'):
         presence_message = {
             'action': 'presence',
             'time': time.time(),
@@ -55,22 +55,22 @@ class Client(metaclass=ClientVerifier):
         except (KeyError, TypeError):
             logger.error('Ошибка ответа сервера')
 
-    @staticmethod
-    def get_message(sock, username):
-        input('Для выхода нажмите Q')
-        message = input('Введите сообщение: ')
-        if message == 'Q':
-            sock.close()
-            logger.info('Завершение сессии...')
-            sys.exit(0)
-        message_context = {
-            'action': 'message',
-            'time': time.time(),
-            'username': username,
-            'text': message
-        }
-        logger.info(f'Сформировано сообщение: {message_context}')
-        return message_context
+    # @staticmethod
+    # def get_message(sock, username):
+    #     input('Для выхода нажмите Q')
+    #     message = input('Введите сообщение: ')
+    #     if message == 'Q':
+    #         sock.close()
+    #         logger.info('Завершение сессии...')
+    #         sys.exit(0)
+    #     message_context = {
+    #         'action': 'message',
+    #         'time': time.time(),
+    #         'username': username,
+    #         'text': message
+    #     }
+    #     logger.info(f'Сформировано сообщение: {message_context}')
+    #     return message_context
 
     @log
     def message_receive(self, sock, username):
@@ -80,10 +80,10 @@ class Client(metaclass=ClientVerifier):
             response = json.loads(json_data)
 
             if response['action'] == 'message' and response['destination'] == username:
-                print(f'Получено сообщение от пользователя {response["sender"]}:\n'
+                print(f'\nПолучено сообщение от пользователя {response["sender"]}:\n'
                       f'{response["text"]}')
             else:
-                logger.error(f'Получено некорректное сообщение от сервера: {response}')
+                logger.warning(f'Получено некорректное сообщение от сервера: {response}')
 
     @log
     def build_communication_message(self, sock, username='guest'):
@@ -101,6 +101,7 @@ class Client(metaclass=ClientVerifier):
 
         json_message = json.dumps(response)
         sock.send(json_message.encode('utf-8'))
+
         logger.info(f'Сообщение отослано пользователю {receiver}')
 
     def user_interactive(self, sock, username):
@@ -114,16 +115,18 @@ class Client(metaclass=ClientVerifier):
                 self.build_communication_message(sock, username)
             elif command == 'Q':
                 print("До свидания!")
+                sock.close()
                 logger.info('Клиент завершил сессию')
-                break
+                sys.exit(0)
             else:
                 print("Неверная команда!")
 
     def run_client(self):
         addr, port = self.parse_client_argv()
         self.sock.connect((addr, port))
+        client_name = input('Введите ваш ник > ')
 
-        # message = self.build_message('guest')
+        # message = self.build_presence_message()
         # json_message = json.dumps(message)
         # self.sock.send(json_message.encode('utf-8'))
         #
@@ -133,16 +136,15 @@ class Client(metaclass=ClientVerifier):
         #
         # self.check_server_answer(response)
 
-        client_name = input('Введите ваш ник > ')
-
         receiver = threading.Thread(target=self.message_receive, args=(self.sock, client_name))
         receiver.daemon = True
         receiver.start()
-        logger.info(f'Клиент {client_name} online')
 
         user_interface = threading.Thread(target=self.user_interactive, args=(self.sock, client_name))
         user_interface.daemon = True
         user_interface.start()
+
+        logger.info(f'Клиент {client_name} online')
 
         receiver.join()
         user_interface.join()

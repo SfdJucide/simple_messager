@@ -2,6 +2,7 @@ import time
 from sys import argv
 import select
 import json
+from json.decoder import JSONDecodeError
 from socket import AF_INET, SOCK_STREAM, socket
 
 import logging
@@ -55,21 +56,28 @@ class Server(metaclass=ServerVerifier):
             logger.error('Неверно переданы аргументы командной строки!')
 
     @log
-    def get_response(self, message, message_list, client):
-        try:
-            if message['action'] == 'presence' and message['user'] == 'guest':
-                response = {
-                    'response': 200
-                }
-            else:
-                response = {
-                    'response': 400,
-                    'error': 'Bad Request'
-                }
-            logger.info('Сформирован ответ сервера: %s', response)
-            message_list.append(response)
-        except KeyError:
-            logger.error('Неправильно сформирован ответ клиента!')
+    def get_response(self, message, message_list):
+        if message['action'] == 'presence':
+            try:
+                if message['action'] == 'presence' and message['user'] == 'Guest':
+                    response = {
+                        'response': 200
+                    }
+                else:
+                    response = {
+                        'response': 400,
+                        'error': 'Bad Request'
+                    }
+                logger.info('Сформирован ответ сервера: %s', response)
+            except KeyError:
+                logger.error('Неправильно сформирован ответ клиента!')
+        elif message['action'] == 'message':
+            try:
+                logger.info(f'сообщение принято от {message["sender"]} {message}')
+                response = [message['sender'], message['text'], message['destination']]
+                message_list.append(response)
+            except KeyError:
+                logger.error('Неверно сформировано сообщение от клиента!')
 
     def runserver(self):
         addr, port = self.parse_argv()
@@ -98,21 +106,16 @@ class Server(metaclass=ServerVerifier):
                 pass
 
             if recv_data_lst:
-                for client_mess in recv_data_lst:
+                for client_message in recv_data_lst:
                     try:
-                        data = client_mess.recv(100000)
+                        data = client_message.recv(100000)
                         json_data = data.decode('utf-8')
                         message = json.loads(json_data)
 
-                        logger.info(f'сообщение принято от {message["sender"]} {message}')
-
-                        response = [message['sender'], message['text'], message['destination']]
-                        self.messages.append(response)
-
-                        # self.get_response(message, self.messages, client_mess)
+                        self.get_response(message, self.messages, client_message)
                     except:
-                        logger.info(f'Клиент {client_mess.getpeername()} отключился от сервера')
-                        self.clients.remove(client_mess)
+                        logger.info(f'Клиент {client_message.getpeername()} отключился от сервера')
+                        self.clients.remove(client_message)
 
             if self.messages and send_data_lst:
                 logger.info(f'сообщения: {self.messages}')
