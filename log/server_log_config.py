@@ -1,10 +1,13 @@
 import logging
 import inspect
 
+from core.settings import LOGGING_LEVEL
+
+
 logging.basicConfig(
-    filename='server.log',
+    filename='log/server.log',
     format="%(asctime)-20s %(levelname)-10s %(module)-20s %(message)s",
-    level=logging.INFO
+    level=LOGGING_LEVEL
 )
 
 server_log = logging.getLogger('server_logger')
