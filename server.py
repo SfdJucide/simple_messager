@@ -14,6 +14,11 @@ from server_database import ServerStorage
 # Инициализация логирования сервера.
 logger = logging.getLogger('server')
 
+# Флаг что был подключён новый пользователь, нужен чтобы не мучать BD
+# постоянными запросами на обновление
+new_connection = False
+conflag_lock = threading.Lock()
+
 
 # Парсер аргументов коммандной строки.
 @log
@@ -68,7 +73,9 @@ class Server(threading.Thread, metaclass=ServerMaker):
     #     словарь-ответ в случае необходимости.
     @log
     def process_client_message(self, message, client):
+        global new_connection
         logger.debug(f'Разбор сообщения от клиента : {message}')
+
         # Если это сообщение о присутствии, принимаем и отвечаем
         if ACTION in message and message[ACTION] == PRESENCE and TIME in message and USER in message:
             # Если такой пользователь ещё не зарегистрирован, регистрируем,иначе завершаем соединение.
@@ -77,6 +84,8 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 client_ip, client_port = client.getpeername()
                 self.database.user_login(message[USER][ACCOUNT_NAME], client_ip, client_port)
                 send_message(client, RESPONSE_200)
+                with conflag_lock:
+                    new_connection = True
             else:
                 response = RESPONSE_400
                 response[ERROR] = 'Имя пользователя уже занято.'
@@ -84,18 +93,51 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 self.clients.remove(client)
                 client.close()
             return
+
         # Если это сообщение, то добавляем его в очередь сообщений. Ответ не требуется.
         elif ACTION in message and message[ACTION] == MESSAGE and DESTINATION in message and TIME in message \
                 and SENDER in message and MESSAGE_TEXT in message:
             self.messages.append(message)
+            self.database.process_message(message[SENDER], message[DESTINATION])
             return
+
         # Если клиент выходит
         elif ACTION in message and message[ACTION] == EXIT and ACCOUNT_NAME in message:
             self.database.user_logout(message[ACCOUNT_NAME])
             self.clients.remove(self.names[ACCOUNT_NAME])
             self.names[ACCOUNT_NAME].close()
             del self.names[ACCOUNT_NAME]
+            with conflag_lock:
+                new_connection = True
             return
+
+        # Если это запрос контакт-листа
+        elif ACTION in message and message[ACTION] == GET_CONTACTS and USER in message and \
+                self.names[message[USER]] == client:
+            response = RESPONSE_202
+            response[LIST_INFO] = self.database.get_contacts(message[USER])
+            send_message(client, response)
+
+        # Если это добавление контакта
+        elif ACTION in message and message[ACTION] == ADD_CONTACT and ACCOUNT_NAME in message and USER in message \
+                and self.names[message[USER]] == client:
+            self.database.add_contact(message[USER], message[ACCOUNT_NAME])
+            send_message(client, RESPONSE_200)
+
+        # Если это удаление контакта
+        elif ACTION in message and message[ACTION] == REMOVE_CONTACT and ACCOUNT_NAME in message and USER in message \
+                and self.names[message[USER]] == client:
+            self.database.remove_contact(message[USER], message[ACCOUNT_NAME])
+            send_message(client, RESPONSE_200)
+
+        # Если это запрос известных пользователей
+        elif ACTION in message and message[ACTION] == USERS_REQUEST and ACCOUNT_NAME in message \
+                and self.names[message[ACCOUNT_NAME]] == client:
+            response = RESPONSE_202
+            response[LIST_INFO] = [user[0]
+                                   for user in self.database.users_list()]
+            send_message(client, response)
+
         # Иначе отдаём Bad request
         else:
             response = RESPONSE_400
@@ -148,6 +190,11 @@ class Server(threading.Thread, metaclass=ServerMaker):
                     try:
                         self.process_client_message(get_message(client_with_message), client_with_message)
                     except:
+                        for name in self.names:
+                            if self.names[name] == client_with_message:
+                                self.database.user_logout(name)
+                                del self.names[name]
+                                break
                         logger.info(f'Клиент {client_with_message.getpeername()} отключился от сервера.')
                         self.clients.remove(client_with_message)
 
@@ -158,6 +205,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 except:
                     logger.info(f'Связь с клиентом с именем {message[DESTINATION]} была потеряна')
                     self.clients.remove(self.names[message[DESTINATION]])
+                    self.database.user_logout(message[DESTINATION])
                     del self.names[message[DESTINATION]]
             self.messages.clear()
 
@@ -176,7 +224,7 @@ def main():
     listen_address, listen_port = parse_args()
 
     # Инициализация базы данных
-    database = ServerStorage()
+    database = ServerStorage(SERVER_DATABASE)
 
     # Создание экземпляра класса - сервера и его запуск:
     server = Server(listen_address, listen_port, database)
