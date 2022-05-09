@@ -10,6 +10,10 @@ from log.server_log_config import log
 from core.descriptors import Port
 from core.mateclasses import ServerMaker
 from server_database import ServerStorage
+from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtCore import QTimer
+from server_gui import MainWindow, gui_create_model, HistoryWindow, create_stat_model, ConfigWindow
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 # Инициализация логирования сервера.
 logger = logging.getLogger('server')
@@ -210,13 +214,13 @@ class Server(threading.Thread, metaclass=ServerMaker):
             self.messages.clear()
 
 
-def print_help():
-    print('Поддерживаемые комманды:')
-    print('users - список известных пользователей')
-    print('connected - список подключенных пользователей')
-    print('loglist - история входов пользователя')
-    print('exit - завершение работы сервера.')
-    print('help - вывод справки по поддерживаемым командам')
+# def print_help():
+#     print('Поддерживаемые комманды:')
+#     print('users - список известных пользователей')
+#     print('connected - список подключенных пользователей')
+#     print('loglist - история входов пользователя')
+#     print('exit - завершение работы сервера.')
+#     print('help - вывод справки по поддерживаемым командам')
 
 
 def main():
@@ -231,29 +235,104 @@ def main():
     server.daemon = True
     server.start()
 
-    # Печатаем справку:
-    print_help()
+    # Создаём графическое окуружение для сервера:
+    server_app = QApplication(sys.argv)
+    main_window = MainWindow()
 
-    # Основной цикл сервера:
-    while True:
-        command = input('Введите комманду: ')
-        if command == 'help':
-            print_help()
-        elif command == 'exit':
-            break
-        elif command == 'users':
-            for user in sorted(database.users_list()):
-                print(f'Пользователь {user[0]}, последний вход: {user[1]}')
-        elif command == 'connected':
-            for user in sorted(database.active_users_list()):
-                print(f'Пользователь {user[0]}, подключен: {user[1]}:{user[2]}, время установки соединения: {user[3]}')
-        elif command == 'loglist':
-            name = input(
-                'Введите имя пользователя для просмотра истории. Для вывода всей истории, просто нажмите Enter: ')
-            for user in sorted(database.login_history(name)):
-                print(f'Пользователь: {user[0]} время входа: {user[1]}. Вход с: {user[2]}:{user[3]}')
-        else:
-            print('Команда не распознана.')
+    # Инициализируем параметры в окна
+    main_window.statusBar().showMessage('Server Working')
+    main_window.active_clients_table.setModel(gui_create_model(database))
+    main_window.active_clients_table.resizeColumnsToContents()
+    main_window.active_clients_table.resizeRowsToContents()
+
+    # Функция обновляющяя список подключённых, проверяет флаг подключения, и если надо обновляет список
+    def list_update():
+        global new_connection
+        if new_connection:
+            main_window.active_clients_table.setModel(gui_create_model(database))
+            main_window.active_clients_table.resizeColumnsToContents()
+            main_window.active_clients_table.resizeRowsToContents()
+            with conflag_lock:
+                new_connection = False
+
+    # Функция создающяя окно со статистикой клиентов
+    def show_statistics():
+        global stat_window
+        stat_window = HistoryWindow()
+        stat_window.history_table.setModel(create_stat_model(database))
+        stat_window.history_table.resizeColumnsToContents()
+        stat_window.history_table.resizeRowsToContents()
+        stat_window.show()
+
+    # # Функция создающяя окно с настройками сервера.
+    # def server_config():
+    #     global config_window
+    #     # Создаём окно и заносим в него текущие параметры
+    #     config_window = ConfigWindow()
+    #     config_window.db_path.insert('')
+    #     config_window.db_file.insert(SERVER_DATABASE)
+    #     config_window.port.insert(DEFAULT_PORT)
+    #     config_window.ip.insert(DEFAULT_IP_ADDRESS)
+    #     config_window.save_btn.clicked.connect(save_server_config)
+    #
+    # # Функция сохранения настроек
+    # def save_server_config():
+    #     global config_window
+    #     message = QMessageBox()
+    #     database_path = config_window.db_path.text()
+    #     database_file = config_window.db_file.text()
+    #     try:
+    #         port = int(config_window.port.text())
+    #     except ValueError:
+    #         message.warning(config_window, 'Ошибка', 'Порт должен быть числом')
+    #     else:
+    #         ip_addrs = config_window.ip.text()
+    #         if 1023 < port < 65536:
+    #             config['SETTINGS']['Default_port'] = str(port)
+    #             dir_path = os.path.dirname(os.path.realpath(__file__))
+    #             with open(f"{dir_path}/{'server.ini'}", 'w') as conf:
+    #                 config.write(conf)
+    #                 message.information(config_window, 'OK', 'Настройки успешно сохранены!')
+    #         else:
+    #             message.warning(config_window, 'Ошибка', 'Порт должен быть от 1024 до 65536')
+
+    # Таймер, обновляющий список клиентов 1 раз в секунду
+    timer = QTimer()
+    timer.timeout.connect(list_update)
+    timer.start(1000)
+
+    # Связываем кнопки с процедурами
+    main_window.refresh_button.triggered.connect(list_update)
+    main_window.show_history_button.triggered.connect(show_statistics)
+    # main_window.config_btn.triggered.connect(server_config)
+
+    # Запускаем GUI
+    server_app.exec_()
+
+    # # Печатаем справку:
+    # print_help()
+
+    # # Основной цикл сервера:
+    # while True:
+    #     command = input('Введите комманду: ')
+    #     if command == 'help':
+    #         print_help()
+    #     elif command == 'exit':
+    #         break
+    #     elif command == 'users':
+    #         for user in sorted(database.users_list()):
+    #             print(f'Пользователь {user[0]}, последний вход: {user[1]}')
+    #     elif command == 'connected':
+    #         for user in sorted(database.active_users_list()):
+    #             print(f'Пользователь {user[0]}, подключен: {user[1]}:{user[2]},
+    #             время установки соединения: {user[3]}')
+    #     elif command == 'loglist':
+    #         name = input(
+    #             'Введите имя пользователя для просмотра истории. Для вывода всей истории, просто нажмите Enter: ')
+    #         for user in sorted(database.login_history(name)):
+    #             print(f'Пользователь: {user[0]} время входа: {user[1]}. Вход с: {user[2]}:{user[3]}')
+    #     else:
+    #         print('Команда не распознана.')
 
 
 if __name__ == '__main__':
